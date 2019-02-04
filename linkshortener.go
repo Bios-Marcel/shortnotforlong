@@ -36,7 +36,6 @@ func (shortener *Shortener) Shorten(url string) string {
 func (shortener *Shortener) generateID() uint16 {
 	rand.Seed(time.Now().UTC().UnixNano())
 	randomInt := uint16(rand.Int31n(math.MaxUint16))
-	fmt.Println(randomInt)
 	_, contains := shortener.shortenedUrls[randomInt]
 	if contains {
 		return shortener.generateID()
