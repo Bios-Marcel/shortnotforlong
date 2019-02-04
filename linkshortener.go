@@ -51,7 +51,7 @@ type RedirectHandler struct {
 
 func (h RedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
-	idAsInt, convertError := strconv.ParseInt(id, 10, 16)
+	idAsInt, convertError := strconv.ParseUint(id, 10, 16)
 	if convertError != nil {
 		http.NotFound(w, r)
 	} else {
