@@ -3,7 +3,6 @@ package linkshortener
 import (
 	"fmt"
 	"math"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 // Shortener offers a function to shorten a URL and redirect to the shortened
 // URL as soon as a request comes in.
 type Shortener struct {
+	nextFreeIndex uint16
 	shortenedUrls map[uint16]string
 	port          int
 	httpServer    *http.Server
@@ -34,14 +34,13 @@ func (shortener *Shortener) Shorten(url string) string {
 }
 
 func (shortener *Shortener) generateID() uint16 {
-	rand.Seed(time.Now().UTC().UnixNano())
-	randomInt := uint16(rand.Int31n(math.MaxUint16))
-	_, contains := shortener.shortenedUrls[randomInt]
-	if contains {
-		return shortener.generateID()
+	if shortener.nextFreeIndex >= math.MaxUint16 {
+		shortener.nextFreeIndex = 0
+	} else {
+		shortener.nextFreeIndex++
 	}
 
-	return randomInt
+	return shortener.nextFreeIndex
 }
 
 //RedirectHandler handles all the redirects for the Server.
