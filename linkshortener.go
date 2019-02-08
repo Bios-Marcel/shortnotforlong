@@ -56,7 +56,7 @@ func (h RedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		url, contains := h.Shortener.shortenedUrls[uint16(idAsInt)]
 		if contains {
-			http.Redirect(w, r, url, http.StatusMovedPermanently)
+			http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 		} else {
 			http.NotFound(w, r)
 		}
