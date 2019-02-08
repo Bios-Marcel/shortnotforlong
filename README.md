@@ -1,5 +1,7 @@
 # Short but not for long
 
+[![builds.sr.ht status](https://builds.sr.ht/~biosmarcel/shortnotforlong/arch.yml.svg)](https://builds.sr.ht/~biosmarcel/shortnotforlong/arch.yml?)
+
 This is a small link shortener written in golang. It's not meant for
 permanently shortening link. So in case you don't want dead links after a
 reboot, this is not for you.
