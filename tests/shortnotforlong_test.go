@@ -16,13 +16,27 @@ func TestShortener(t *testing.T) {
 		}
 	}()
 
-	httpsGoogleCom := "https://www.google.com/"
-	shortenedURL := shortener.Shorten(httpsGoogleCom)
-	response, httpError := http.Head(shortenedURL)
-	if httpError != nil {
-		t.Fatalf("Error shortening looking up: '%s' (%s). Error: %s", shortenedURL, httpsGoogleCom, httpError.Error())
+	{
+		URL := "https://www.google.com/"
+		shortenedURL := shortener.Shorten(URL)
+		response, httpError := http.Head(shortenedURL)
+		if httpError != nil {
+			t.Fatalf("Error shortening looking up: '%s' (%s). Error: %s", shortenedURL, URL, httpError.Error())
+		}
+		if response.Request.URL.String() != URL {
+			t.Errorf("URL was incorrect: %s", response.Request.URL.String())
+		}
 	}
-	if response.Request.URL.String() != httpsGoogleCom {
-		t.Errorf("URL was incorrect: %s", response.Request.URL.String())
+
+	{
+		URL := "https://duckduckgo.com/"
+		shortenedURL := shortener.Shorten(URL)
+		response, httpError := http.Head(shortenedURL)
+		if httpError != nil {
+			t.Fatalf("Error shortening looking up: '%s' (%s). Error: %s", shortenedURL, URL, httpError.Error())
+		}
+		if response.Request.URL.String() != URL {
+			t.Errorf("URL was incorrect: %s", response.Request.URL.String())
+		}
 	}
 }
