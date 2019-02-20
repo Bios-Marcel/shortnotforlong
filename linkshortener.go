@@ -1,6 +1,7 @@
 package linkshortener
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"net/http"
@@ -61,6 +62,11 @@ func (h RedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 		}
 	}
+}
+
+// Close closes the internal http server.
+func (shortener *Shortener) Close() {
+	shortener.httpServer.Shutdown(context.Background())
 }
 
 //NewShortener creates a new server that uses the given port.
