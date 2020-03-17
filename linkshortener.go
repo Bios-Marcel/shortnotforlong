@@ -23,10 +23,10 @@ type Shortener struct {
 // local webserver.
 func (shortener *Shortener) Shorten(url string) string {
 	var suffix = ""
-	var urlSuffix = regexp.MustCompile(`.*(\.\w{3,4}$)`)
+	var urlSuffix = regexp.MustCompile(`(http(s)?:\/\/)?.*(\.\w+)+\/.*(\.\w{1,4})$`)
 	var matches = urlSuffix.FindStringSubmatch(url)
-	if len(matches) > 1 {
-		suffix = matches[1]
+	if len(matches) > 0 {
+		suffix = matches[len(matches) - 1]
 	}
 
 	for id, address := range shortener.shortenedUrls {
