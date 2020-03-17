@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -22,16 +22,23 @@ type Shortener struct {
 // Shorten takes a url and returns a shortend version that redirects via the
 // local webserver.
 func (shortener *Shortener) Shorten(url string) string {
+	var suffix = ""
+	var urlSuffix = regexp.MustCompile(`.*(\.\w{3,4}$)`)
+	var matches = urlSuffix.FindStringSubmatch(url)
+	if len(matches) > 1 {
+		suffix = matches[1]
+	}
+
 	for id, address := range shortener.shortenedUrls {
 		if address == url {
-			return fmt.Sprintf("http://localhost:%d/%d", shortener.port, id)
+			return fmt.Sprintf("http://localhost:%d/%d"+suffix, shortener.port, id)
 		}
 	}
 
 	newID := shortener.generateID()
 	shortener.shortenedUrls[newID] = url
 
-	return fmt.Sprintf("http://localhost:%d/%d", shortener.port, newID)
+	return fmt.Sprintf("http://localhost:%d/%d"+suffix, shortener.port, newID)
 }
 
 func (shortener *Shortener) generateID() uint16 {
@@ -50,7 +57,13 @@ type RedirectHandler struct {
 }
 
 func (h RedirectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/")
+	var id = ""
+	var idRegex = regexp.MustCompile(`/(\d*)`)
+	var matches = idRegex.FindStringSubmatch(r.URL.Path)
+	if len(matches) > 1 {
+		id = matches[1]
+	}
+
 	idAsInt, convertError := strconv.ParseUint(id, 10, 16)
 	if convertError != nil {
 		http.NotFound(w, r)
