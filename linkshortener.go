@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -21,24 +23,22 @@ type Shortener struct {
 
 // Shorten takes a url and returns a shortend version that redirects via the
 // local webserver.
-func (shortener *Shortener) Shorten(url string) string {
-	var suffix = ""
-	var urlSuffix = regexp.MustCompile(`(http(s)?:\/\/)?.*(\.\w+)+\/.*(\.\w{1,4})$`)
-	var matches = urlSuffix.FindStringSubmatch(url)
-	if len(matches) > 0 {
-		suffix = matches[len(matches) - 1]
+func (shortener *Shortener) Shorten(url string) (string, string) {
+	var suffix string
+	if strings.Count(url, "/") > 2 {
+		suffix = filepath.Ext(url)
 	}
 
 	for id, address := range shortener.shortenedUrls {
 		if address == url {
-			return fmt.Sprintf("http://localhost:%d/%d"+suffix, shortener.port, id)
+			return fmt.Sprintf("http://localhost:%d/%d", shortener.port, id), suffix
 		}
 	}
 
 	newID := shortener.generateID()
 	shortener.shortenedUrls[newID] = url
 
-	return fmt.Sprintf("http://localhost:%d/%d"+suffix, shortener.port, newID)
+	return fmt.Sprintf("http://localhost:%d/%d", shortener.port, newID), suffix
 }
 
 func (shortener *Shortener) generateID() uint16 {
