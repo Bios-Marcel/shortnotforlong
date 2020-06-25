@@ -24,31 +24,47 @@ type Shortener struct {
 // Shorten takes a url and returns a shortend version that redirects via the
 // local webserver.
 func (shortener *Shortener) Shorten(url string) (string, string) {
-	var suffix string
-	if strings.Count(url, "/") > 2 {
-		suffix = filepath.Ext(url)
-	}
-
+	suffix := getSuffix(url)
 	for id, address := range shortener.shortenedUrls {
 		if address == url {
-			return fmt.Sprintf("http://localhost:%d/%d", shortener.port, id), suffix
+			return shortener.formatShortenedURL(id), suffix
 		}
 	}
 
-	newID := shortener.generateID()
+	newID := shortener.popNextIndex()
 	shortener.shortenedUrls[newID] = url
 
-	return fmt.Sprintf("http://localhost:%d/%d", shortener.port, newID), suffix
+	return shortener.formatShortenedURL(newID), suffix
 }
 
-func (shortener *Shortener) generateID() uint16 {
-	if shortener.nextFreeIndex >= math.MaxUint16 {
-		shortener.nextFreeIndex = 0
-	} else {
-		shortener.nextFreeIndex++
-	}
+func (shortener *Shortener) formatShortenedURL(id uint16) string {
+	return fmt.Sprintf("http://localhost:%d/%d", shortener.port, id)
+}
 
+func getSuffix(url string) string {
+	if strings.Count(url, "/") > 2 {
+		return filepath.Ext(url)
+	}
+	return ""
+}
+
+// CalculateShortenedLength returns the length of the shortened URL without
+// a suffix and the length of the suffix, which is 0 if the suffix isn't available.
+func (shortener *Shortener) CalculateShortenedLength(url string) (int, int) {
+	id := shortener.peekNextID()
+	return len(shortener.formatShortenedURL(id)), len(getSuffix(url))
+}
+
+func (shortener *Shortener) popNextIndex() uint16 {
+	shortener.nextFreeIndex = shortener.peekNextID()
 	return shortener.nextFreeIndex
+}
+
+func (shortener *Shortener) peekNextID() uint16 {
+	if shortener.nextFreeIndex >= math.MaxUint16 {
+		return 0
+	}
+	return shortener.nextFreeIndex + 1
 }
 
 //RedirectHandler handles all the redirects for the Server.
